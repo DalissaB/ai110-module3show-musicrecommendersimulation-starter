@@ -9,25 +9,44 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
-from recommender import load_songs, recommend_songs
+from src.recommender import load_songs, recommend_songs
 
 
 def main() -> None:
     songs = load_songs("data/songs.csv") 
 
-    # Starter example profile
-    user_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}
+    # My taste profile
+    user_prefs = {
+        "favorite_genre": "pop",
+        "favorite_mood": "bittersweet",
+        "target_energy": 0.65,
+        "likes_acoustic": False,
+    }
 
     recommendations = recommend_songs(user_prefs, songs, k=5)
 
-    print("\nTop recommendations:\n")
-    for rec in recommendations:
-        # You decide the structure of each returned item.
-        # A common pattern is: (song, score, explanation)
-        song, score, explanation = rec
-        print(f"{song['title']} - Score: {score:.2f}")
-        print(f"Because: {explanation}")
-        print()
+    MAX_SCORE = 7.0
+
+    # Header showing the profile we recommended for.
+    print("\n" + "=" * 52)
+    print("  TOP RECOMMENDATIONS FOR YOU")
+    print(
+        f"  Taste: {user_prefs['favorite_genre']} / "
+        f"{user_prefs['favorite_mood']} / "
+        f"energy {user_prefs['target_energy']} / "
+        f"acoustic={user_prefs['likes_acoustic']}"
+    )
+    print("=" * 52)
+
+    for rank, (song, score, explanation) in enumerate(recommendations, start=1):
+        confidence = score / MAX_SCORE * 100
+        print(f"\n{rank}. {song['title']} - {song['artist']}")
+        print(f"   Score: {score:.2f} / {MAX_SCORE:.0f}  ({confidence:.0f}% match)")
+        print("   Reasons:")
+        for reason in explanation.split("; "):
+            print(f"     - {reason}")
+
+    print("\n" + "=" * 52 + "\n")
 
 
 if __name__ == "__main__":
