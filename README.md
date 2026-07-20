@@ -139,11 +139,69 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+I tried to "break" my recommender with some adversarial / edge-case profiles to see if the scoring logic could be tricked. Here's what happened.
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+### 1. Conflicting Vibes (high energy + sad mood)
+
+`{genre: classical, mood: melancholy, energy: 0.95, acoustic: False}` — a sad, slow genre but asking for really high energy.
+
+```
+1. Moonlit Sonata - Elena Ross  (classical/melancholy)  Score: 5.35/7 (76%)
+2. Gym Hero - Max Pulse  (pop/intense)               Score: 1.98/7 (28%)
+3. Iron Veins - Ashfall  (metal/angry)               Score: 1.97/7 (28%)
+4. Storm Runner - Voltline  (rock/intense)           Score: 1.96/7 (28%)
+5. Sunrise City - Neon Echo  (pop/happy)             Score: 1.87/7 (27%)
+```
+
+**What I learned:** it wasn't really tricked. Moonlit Sonata still won because it matched genre + mood (5 points) even though its energy was the opposite of what I asked for. This shows genre and mood totally outweigh energy — the conflicting energy only cost it a little.
+
+### 2. Impossible Energy (out of the 0–1 range)
+
+`{genre: pop, mood: happy, energy: 2.0, acoustic: False}` — I put in an energy value that isn't even possible.
+
+```
+1. Sunrise City - Neon Echo  (pop/happy)          Score: 5.82/7 (83%)
+2. Gym Hero - Max Pulse  (pop/intense)            Score: 3.93/7 (56%)
+3. Cruel Summer - Taylor Swift  (pop/bittersweet) Score: 3.70/7 (53%)
+4. Rooftop Lights - Indigo Parade  (indie pop/happy) Score: 2.76/7 (39%)
+5. Iron Veins - Ashfall  (metal/angry)            Score: 0.98/7 (14%)
+```
+
+**What I learned:** this actually found a bug. My energy formula is `1 - abs(target - song)`, so with target = 2.0 it gives *negative* points (e.g. energy 0.82 → 1 - 1.18 = -0.18). The song still ranked #1 from its other matches, but the energy part was quietly subtracting points instead of adding them. My scorer trusts that energy is always 0–1 and doesn't check. A fix would be to clamp energy to 0–1 or validate the input.
+
+### 3. Ghost Genre (genre not in my catalog)
+
+`{genre: k-pop, mood: party, energy: 0.7, acoustic: False}` — a genre no song has.
+
+```
+1. Titi Me Pregunto - Bad Bunny  (reggaeton/party) Score: 3.98/7 (57%)
+2. Cruel Summer - Taylor Swift  (pop/bittersweet)  Score: 2.00/7 (29%)
+3. Night Drive Loop - Neon Echo  (synthwave/moody) Score: 1.95/7 (28%)
+4. Rooftop Lights - Indigo Parade  (indie pop/happy) Score: 1.94/7 (28%)
+5. Sally When the Wine Runs Out - Role Model  (indie/playful) Score: 1.94/7 (28%)
+```
+
+**What I learned:** it didn't crash, it just gave 0 genre points to everything and fell back on mood + energy + acoustic. Bad Bunny won on the party mood match. So a genre typo silently makes my biggest feature useless without any warning.
+
+### 4. Case Trap (capital "Pop" instead of "pop")
+
+`{genre: Pop, mood: happy, energy: 0.8, acoustic: False}` — same genre, just capitalized.
+
+```
+1. Sunrise City - Neon Echo  (pop/happy)          Score: 3.98/7 (57%)
+2. Rooftop Lights - Indigo Parade  (indie pop/happy) Score: 3.96/7 (57%)
+3. Concrete Dreams - Blockprint  (hip hop/confident) Score: 2.00/7 (29%)
+4. Night Drive Loop - Neon Echo  (synthwave/moody) Score: 1.95/7 (28%)
+5. Titi Me Pregunto - Bad Bunny  (reggaeton/party) Score: 1.92/7 (27%)
+```
+
+**What I learned:** "Pop" != "pop", so NONE of the pop songs got their genre points. Sunrise City dropped from what would have been ~6.98 down to 3.98 just from one capital letter. My matching is case-sensitive, which is easy to fix with `.lower()` on both sides.
+
+**Takeaways / fixes I could make:**
+
+- Clamp or validate `target_energy` so it can't go outside 0–1 (fixes the negative-points bug)
+- Lowercase genre and mood before comparing so capitalization doesn't matter
+- Maybe warn the user if their favorite genre matches zero songs in the catalog
 
 ---
 
