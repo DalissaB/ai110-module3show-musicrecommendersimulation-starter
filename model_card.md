@@ -5,6 +5,10 @@
 Give your model a short, descriptive name.  
 Example: **VibeFinder 1.0**  
 
+**VibeMatch 1.0**
+
+It matches songs to your vibe. That is the whole idea in the name.
+
 ---
 
 ## 2. Intended Use  
@@ -16,6 +20,12 @@ Prompts:
 - What kind of recommendations does it generate  
 - What assumptions does it make about the user  
 - Is this for real users or classroom exploration  
+
+VibeMatch suggests songs that fit your taste. You tell it what you like. It gives you a ranked list of songs back.
+
+It assumes you can name one favorite genre, one favorite mood, an energy level, and if you like acoustic music. It assumes your taste fits into those four things.
+
+This is for classroom exploration, not real users. It is a small simulation to learn how recommenders work. It is not meant to be a real app.
 
 ---
 
@@ -32,6 +42,16 @@ Prompts:
 
 Avoid code here. Pretend you are explaining the idea to a friend who does not program.
 
+Each song has a few tags. It has a genre, a mood, an energy number, and how acoustic it is.
+
+You have a profile too. You pick a favorite genre, a favorite mood, a target energy, and if you like acoustic songs.
+
+The model gives each song points. A matching genre is worth 3 points. A matching mood is worth 2 points. Energy is worth up to 1 point, based on how close the song is to what you want. Acoustic is worth 1 point if it matches. The most a song can get is 7 points.
+
+Then it sorts all the songs from highest points to lowest. It hands back the top few. That is your recommendation list.
+
+I changed the starter code a lot. The starter just returned the first songs and had empty functions. I wrote the real scoring, the sorting, the CSV loader, and a reason for every song so you can see why it was picked.
+
 ---
 
 ## 4. Data  
@@ -45,6 +65,16 @@ Prompts:
 - Did you add or remove data  
 - Are there parts of musical taste missing in the dataset  
 
+The catalog has 18 songs. It is small on purpose.
+
+The genres include pop, lofi, rock, ambient, jazz, synthwave, indie pop, hip hop, classical, reggaeton, country, metal, and folk. The moods include happy, chill, intense, moody, relaxed, focused, bittersweet, playful, party, confident, melancholy, nostalgic, angry, and hopeful.
+
+I added songs to the starter file. I added 3 real songs by Taylor Swift, Bad Bunny, and Role Model. I also added a few made-up songs to cover more genres. I removed 3 of my made-up songs so the list stayed diverse.
+
+A lot of taste is missing. There are only a few songs per genre. There are no lyrics, no language info, and no year or culture data. So the model does not really know a song, it only knows a few tags.
+
+Also, the audio numbers for the real songs are my estimates. I guessed them from how the songs sound, so they are not exact.
+
 ---
 
 ## 5. Strengths  
@@ -56,6 +86,12 @@ Prompts:
 - User types for which it gives reasonable results  
 - Any patterns you think your scoring captures correctly  
 - Cases where the recommendations matched your intuition  
+
+It works well for clear, single-genre tastes. When I asked for chill lofi, I got calm lofi songs. When I asked for intense rock, I got Storm Runner at the top. That felt right.
+
+It captures energy well. It groups loud songs together and calm songs together. It does not just pick the highest energy song, it picks the song closest to what you want.
+
+The reasons matched my intuition. Every pick shows why it was chosen. When Cruel Summer scored 99% for my taste, the reasons made total sense (pop, bittersweet, right energy). It is easy to trust because you can see the math.
 
 ---
 
@@ -115,6 +151,16 @@ Prompts:
 - Improving diversity among the top results  
 - Handling more complex user tastes  
 
+I would let users pick more than one genre. My taste is pop and reggaeton, but right now I can only pick one.
+
+I would fix the bugs I found. I would lowercase the text so "Pop" and "pop" match. I would also stop energy from going out of the 0 to 1 range.
+
+I would add more features, like tempo, valence, and danceability. That would make the matches richer.
+
+I would make the top list more diverse. Right now it can give me five very similar songs. I could add a rule so it mixes in some variety.
+
+I would also grow the catalog. More songs would mean better and more surprising picks.
+
 ---
 
 ## 9. Personal Reflection  
@@ -126,3 +172,11 @@ Prompts:
 - What you learned about recommender systems  
 - Something unexpected or interesting you discovered  
 - How this changed the way you think about music recommendation apps  
+
+I learned that a recommender is really just math on data. It gives points and sorts. There is no magic. It only knows what you feed it.
+
+The interesting part was the weights. Changing how much genre is worth totally changed my results. Small choices by the person who builds it have a big effect.
+
+I also learned that bias sneaks in easily. My model buries reggaeton just because I picked pop as my one genre. I did not mean to, but the design did it.
+
+This changed how I see apps like Spotify. When it feels like it "gets me," it is really just matching tags and guessing. And when it keeps showing me the same kind of song, that is the filter bubble I built in my own tiny version too.

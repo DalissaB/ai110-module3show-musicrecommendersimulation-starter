@@ -11,7 +11,7 @@ Your goal is to:
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-Replace this paragraph with your own summary of what your version does.
+My version is a small content-based music recommender called VibeMatch. You give it a taste profile (a favorite genre, a favorite mood, a target energy, and whether you like acoustic songs) and it scores every song in the catalog against what you asked for. It gives points for matching your genre and mood, plus points for how close a song's energy and acoustic-ness are to your preferences, then it sorts everything and hands back your top picks with a reason for each one. It runs from the command line and I tested it with several different taste profiles, including some edge-case profiles built to try to trick the scoring.
 
 ---
 
@@ -223,10 +223,9 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+Building this taught me that a recommender is really just math on data. It turns a song into a few numbers and tags, compares them to what you say you like, adds up points, and sorts. There is no magic to it. It only knows what you feed it, and the person who builds it decides what counts and how much each thing is worth. When I changed the weight on genre, my whole top list changed. That showed me how much power those small design choices have over what people end up seeing.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+I also learned how easily bias sneaks in. My system only lets you pick one genre, so when I chose pop it quietly buried reggaeton, even though I love Bad Bunny and Karol G. I did not mean to do that, but the design did it for me. My catalog also has more pop than other genres, so pop gets more chances to win just for being common. This changed how I see apps like Spotify. When it feels like it "gets me," it is really just matching tags and guessing, and when it keeps showing me the same kind of song, that is a filter bubble, which is the exact same thing I accidentally built in my own tiny version.
 
 
 
